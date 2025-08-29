@@ -1,103 +1,256 @@
-import Image from "next/image";
+"use client";
+import { signIn, signOut, useSession } from "next-auth/react";
+import type { Session } from "next-auth";
+import Header from "./Components/Header";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { CiSearch } from "react-icons/ci";
+import MovieCard from "./Components/MovieCard";
+import AddMovieForm, { Movie } from "./Components/AddMovieForm";
+import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { data: session , status} = useSession();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const isAuthenticated: Boolean = status === "authenticated";
+  console.log("aiuthen",isAuthenticated);
+  const isLoading: Boolean = status === "loading";
+
+  const [allMovie , setAllMovie] = useState<String[]>([]);
+  const [open , setOpen] = useState<Boolean>(false);
+  const [isOpen , setIsOpen] = useState<string | null>(null);
+  const [query , setQuery] = useState("");
+  const [edit , setEdit] = useState<Boolean>(false);
+  const [selectedMovie , setSelectedMovie] = useState<string>("");
+  const [id , setId] = useState<string>("");
+  const [formMovie, setFormMovie] = useState<Movie | null>(null);
+
+  const [formData, setFormData] = useState<Movie>({
+      title: selectedMovie.title || "",
+      director: selectedMovie.director || "",
+      year: selectedMovie.year || new Date().getFullYear(),
+      genre: selectedMovie.genre || "",
+    });
+  
+    const handleChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === "year" ? Number(value) : value,
+      }));
+    };
+  
+    const handleSubmit = async(e: React.FormEvent) => {
+      e.preventDefault();
+      if (!formData.title || !formData.director || !formData.genre) return;
+      console.log("form data",formData);
+      const res = await axios.put(`/api/movies/${id}`, formData);
+      if(res.status === 200){
+        toast.success("Edit Successful");
+        setTimeout(() => {
+          window.location.reload();
+        }, 300);
+      }
+    };
+
+  useEffect(() => {
+    axios.get("/api/movies")
+    .then((res) => {
+      console.log("the res",res.data);
+      console.log("size",allMovie.length);
+      setAllMovie(res.data);
+    })
+  },[])
+
+  useEffect(() => {
+
+    if(query.trim() === ""){
+      console.log("nothing to search");
+    }
+
+    const fetchMovies = async () => {
+      // setLoading(true);
+      try {
+        const res = await axios.get(`/api/search?q=${query}`);
+        setAllMovie(res.data);
+      } catch (err) {
+        toast.error("Failed to fetch movies");
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    const timeout = setTimeout(fetchMovies , 300);
+    return () => clearTimeout(timeout);
+  },[query])
+
+  const handleAddMovie = async(data: Movie) => {
+    console.log(data);
+    try{
+      const res = await axios.post("/api/movies" , data);
+      console.log("response",res);
+      if(res.data){
+        toast.success("Movie added successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        },300)
+      }
+    } catch (err) {
+    console.error(err);
+    }
+  }
+
+  const toggleMenu = (id: string) => {
+    setIsOpen(isOpen === id ? null : id);
+  }
+
+  const handleDelete = async(id: string) => {
+    try {
+      console.log("card removed",id);
+      const res = await axios.delete(`/api/movies/${id}`);
+      console.log("delete response",res);
+      if(res.status === 200){
+        toast.success("Movie Deleted Successfully!");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log("error",error);
+    }
+  }
+
+  const handleEdit = async(id: string) => {
+    setEdit(true);
+    const res = await axios.get(`/api/movies/${id}`);
+    setId(id);
+    setFormMovie(res.data);
+    setSelectedMovie(res.data);
+    setTimeout(() => {
+      setSelectedMovie(res.data);
+    }, 300);
+    console.log("res",res.data);
+  }
+
+  console.log("status",status);
+
+  return (
+    <div className="p-4 relative">
+      <Toaster />
+      <Header session={session} isAuthenticated={isAuthenticated} isloading={isLoading} />
+      <div className="w-full h-[90vh] py-4">
+        <div className="flex items-center justify-around">
+          <div className="flex items-center justify-center">
+            <span className="text-xl font-bold"><CiSearch /></span>
+            <input 
+             type="text" 
+             value={query}
+             onChange={(e) => setQuery(e.target.value)}
+             className="border-none outline-none p-1 w-[55vw] sm:w-[30vw]" placeholder="Search Movie..."/>
+          </div>
+          <div className="border border-white rounded-full w-[25vw] flex items-center justify-center sm:w-[14vw] md:w-[13vw] lg:w-[11vw] xl:w-[8vw] p-2 sm:p-2 text-black bg-green-300 text-[3.8vw] sm:text-[2vw] md:text-[1.7vw] lg:text-[1.3vw] xl:text-[1vw] hover:cursor-pointer"
+          onClick={() => setOpen(true)}>
+            Add Movie
+          </div>
+          <div className={`h-screen w-full absolute top-0 left-0 ${open ? "block bg-transparent bg-opacity-70 backdrop-blur-2xl" : "hidden" }`}>
+            <span className="hover:cursor-pointer absolute top-10 left-5 text-red-700 text-xl font-light" onClick={() => setOpen(false)}>Close</span>
+            <div className="flex items-center justify-center h-full">
+              <AddMovieForm onAdd={handleAddMovie}/>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="mt-5 flex flex-col sm:text-center sm:justify-center sm:flex-row flex-wrap gap-5 sm:gap-10">
+          {
+            allMovie.length >= 1 ? (
+              allMovie.map((movie) => (
+                <div className={`w-full sm:w-[20vw] gap-2 ${open ? "hidden" : "relative"}`}>
+                <MovieCard 
+                movie={{
+                  title: movie.title,
+                  director: movie.director,
+                  year: movie.year,
+                  genre: movie.genre,
+                }}
+                />
+                <div className="absolute top-5 right-2 text-black hover:cursor-pointer text-xl font-light">
+                  <span onClick={() => toggleMenu(movie._id)}><BsThreeDotsVertical /></span>
+                  {
+                    isOpen === movie._id && (
+                      <div className={`flex flex-col gap-3 items-center justify-center absolute p-2 bg-black rounded-md top-full right-3`}>
+                       <span className="text-white text-[3.8vw] sm:text-[2vw] md:text-[1.7vw] lg:text-[1.3vw] xl:text-[1vw]" onClick={() => handleDelete(movie._id)}>Delete</span>
+                       <span className="text-white text-[3.8vw] sm:text-[2vw] md:text-[1.7vw] lg:text-[1.3vw] xl:text-[1vw]" onClick={() => handleEdit(movie._id)}>Edit</span>
+                      </div>
+                    )
+                  }
+                </div>
+              </div>
+              ))
+            ) : (
+              <span className="">No Movie Available</span>
+            )
+          }
+        </div>
+       {
+        edit && isAuthenticated && (
+          <div className={`absolute top-0 left-0 h-screen w-full bg-transparent bg-opacity-60 backdrop-blur-xl ${edit ? "block" : "hidden"}`}>
+          <span className="absolute top-3 left-3 text-red-500" onClick={() => setEdit(false)}>Close</span>
+          <div className="h-full w-full flex items-center justify-center">
+              
+              <form
+      onSubmit={handleSubmit}
+      className="max-w-md bg-white p-6 rounded-xl z-99 shadow-md space-y-4"
+    >
+      <h2 className="text-xl font-bold text-gray-800">Edit Movie</h2>
+
+      <input
+        type="text"
+        name="title"
+        placeholder="Title"
+        value={formMovie?.title || ""}
+        onChange={(e) => setFormData({ ...formMovie, title: e.target.value })}
+        className="w-full text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+      />
+
+      <input
+        type="text"
+        name="director"
+        placeholder="Director"
+        value={formData.director}
+        onChange={handleChange}
+        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+      />
+
+      <input
+        type="number"
+        name="year"
+        placeholder="Release Year"
+        value={formData.year}
+        onChange={handleChange}
+        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+      />
+
+      <input
+        type="text"
+        name="genre"
+        placeholder="Genre"
+        value={formData.genre}
+        onChange={handleChange}
+        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+      />
+      <button
+        type="submit"
+        className="w-full bg-indigo-600 hover:cursor-pointer text-white py-2 rounded-xl hover:bg-indigo-700 transition"
+      >
+        Edit
+      </button>
+    </form>
+           </div>
+          </div>
+        )
+       }
+      </div>
     </div>
   );
 }
