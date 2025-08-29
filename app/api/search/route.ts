@@ -1,5 +1,6 @@
 import { connectDB } from "@/libs/db";
 import Movie,{ Movietype } from "../../../models/movie";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   await connectDB();
@@ -11,5 +12,5 @@ export async function GET(request: Request) {
     title: { $regex: query, $options: "i" },
   });
 
-  return Response.json(movies);
+  return NextResponse.json(movies);
 }

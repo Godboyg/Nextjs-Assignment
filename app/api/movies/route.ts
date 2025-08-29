@@ -1,15 +1,11 @@
 import { connectDB } from "../../../libs/db";
-import { NextResponse } from "next/server";
 import Movie, { Movietype } from "../../../models/movie";
+import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(_req: Request) {
   await connectDB();
   const movies: Movietype[] = await Movie.find();
-  const mo = [
-    { id: "1", title: "Inception", year: 2010 },
-    { id: "2", title: "Interstellar", year: 2014 },
-  ];
-  return Response.json(movies);
+  return NextResponse.json(movies);
 }
 
 export async function POST(request: Request) {
@@ -18,5 +14,5 @@ export async function POST(request: Request) {
   console.log("data and comming data", data , request);
   const movie = new Movie(data);
   await movie.save();
-  return Response.json(movie);
+  return NextResponse.json(movie);
 }
