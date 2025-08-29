@@ -26,7 +26,6 @@ export default function Home() {
   const [edit , setEdit] = useState<boolean>(false);
   const [selectedMovie , setSelectedMovie] = useState<string>("");
   const [id , setId] = useState<string>("");
-  const [formMovie, setFormMovie] = useState<Movie | null>(null);
 
   const [formData, setFormData] = useState<Movie>({
       title: "",
@@ -50,11 +49,13 @@ export default function Home() {
       if (!formData.title || !formData.director || !formData.genre) return;
       console.log("form data",formData);
       const res = await axios.put(`/api/movies/${id}`, formData);
+      console.log("movie edited",res.data);
       if(res.status === 200){
         toast.success("Edit Successful");
         setTimeout(() => {
           window.location.reload();
         }, 300);
+        setFormData("");
       }
     };
 
@@ -127,7 +128,6 @@ export default function Home() {
     setEdit(true);
     const res = await axios.get(`/api/movies/${id}`);
     setId(id);
-    setFormMovie(res.data);
     setSelectedMovie(res.data);
     setTimeout(() => {
       setSelectedMovie(res.data);
@@ -156,7 +156,7 @@ export default function Home() {
             Add Movie
           </div>
           <div className={`h-screen w-full absolute top-0 left-0 ${open ? "block bg-transparent bg-opacity-70 backdrop-blur-2xl" : "hidden" }`}>
-            <span className="hover:cursor-pointer absolute top-10 left-5 text-red-700 text-xl font-light" onClick={() => setOpen(false)}>Close</span>
+            <span className="absolute top-3 hover:cursor-pointer left-3 text-red-500" onClick={() => setOpen(false)}>Close</span>
             <div className="flex items-center justify-center h-full">
               <AddMovieForm onAdd={handleAddMovie}/>
             </div>
@@ -196,7 +196,7 @@ export default function Home() {
        {
         edit && isAuthenticated && (
           <div className={`absolute top-0 left-0 h-screen w-full bg-transparent bg-opacity-60 backdrop-blur-xl ${edit ? "block" : "hidden"}`}>
-          <span className="absolute top-3 left-3 text-red-500" onClick={() => setEdit(false)}>Close</span>
+          <span className="absolute top-3 left-3 text-red-500 hover:cursor-pointer" onClick={() => setEdit(false)}>Close</span>
           <div className="h-full w-full flex items-center justify-center">
               
               <form
@@ -209,9 +209,9 @@ export default function Home() {
         type="text"
         name="title"
         placeholder="Title"
-        value={formMovie?.title || ""}
-        // onChange={(e) => setFormData({ ...formMovie, title: e.target.value })}
-        className="w-full text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+        value={formData.title}
+        onChange={handleChange}
+        className="w-full text-black required border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
       />
 
       <input
@@ -220,7 +220,7 @@ export default function Home() {
         placeholder="Director"
         value={formData.director}
         onChange={handleChange}
-        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+        className="w-full required text-black required border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
       />
 
       <input
@@ -229,7 +229,7 @@ export default function Home() {
         placeholder="Release Year"
         value={formData.year}
         onChange={handleChange}
-        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+        className="w-full required text-black required border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
       />
 
       <input
@@ -238,7 +238,7 @@ export default function Home() {
         placeholder="Genre"
         value={formData.genre}
         onChange={handleChange}
-        className="w-full required text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+        className="w-full required text-black required border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
       />
       <button
         type="submit"
@@ -248,6 +248,14 @@ export default function Home() {
       </button>
     </form>
            </div>
+          </div>
+        )
+       }
+       {
+        edit && !isAuthenticated && (
+          <div className="absolute top-0 left-0 h-screen bg-transparent backdrop-blur-2xl bg-opacity-50 w-full flex items-center justify-center">
+            <span className="absolute top-3 left-3 text-red-500 hover:cursor-pointer" onClick={() => setEdit(false)}>Close</span>
+            <span className="text-white font-light">Pls Authenticate to Edit!!</span>
           </div>
         )
        }
