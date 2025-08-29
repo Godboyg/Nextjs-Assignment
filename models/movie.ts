@@ -1,10 +1,11 @@
 import mongoose , { Schema , Document , Model } from "mongoose";
 
 export interface Movietype extends Document {
+  _id: string;
   title: string;
-  director?: string;
-  year?: number;
-  genre?: string;
+  director: string;
+  year: number;
+  genre: string;
 }
 
 const MoviceSchema: Schema = new Schema({

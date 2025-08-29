@@ -10,28 +10,29 @@ import AddMovieForm, { Movie } from "./Components/AddMovieForm";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { Movietype } from "@/models/movie";
 
 export default function Home() {
   const { data: session , status} = useSession();
 
-  const isAuthenticated: Boolean = status === "authenticated";
+  const isAuthenticated: boolean = status === "authenticated";
   console.log("aiuthen",isAuthenticated);
-  const isLoading: Boolean = status === "loading";
+  const isLoading: boolean = status === "loading";
 
-  const [allMovie , setAllMovie] = useState<String[]>([]);
-  const [open , setOpen] = useState<Boolean>(false);
+  const [allMovie , setAllMovie] = useState<Movietype[]>([]);
+  const [open , setOpen] = useState<boolean>(false);
   const [isOpen , setIsOpen] = useState<string | null>(null);
   const [query , setQuery] = useState("");
-  const [edit , setEdit] = useState<Boolean>(false);
+  const [edit , setEdit] = useState<boolean>(false);
   const [selectedMovie , setSelectedMovie] = useState<string>("");
   const [id , setId] = useState<string>("");
   const [formMovie, setFormMovie] = useState<Movie | null>(null);
 
   const [formData, setFormData] = useState<Movie>({
-      title: selectedMovie.title || "",
-      director: selectedMovie.director || "",
-      year: selectedMovie.year || new Date().getFullYear(),
-      genre: selectedMovie.genre || "",
+      title: "",
+      director: "",
+      year: new Date().getFullYear(),
+      genre: "",
     });
   
     const handleChange = (
@@ -209,7 +210,7 @@ export default function Home() {
         name="title"
         placeholder="Title"
         value={formMovie?.title || ""}
-        onChange={(e) => setFormData({ ...formMovie, title: e.target.value })}
+        // onChange={(e) => setFormData({ ...formMovie, title: e.target.value })}
         className="w-full text-black border rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
       />
 
