@@ -55,7 +55,12 @@ export default function Home() {
         setTimeout(() => {
           window.location.reload();
         }, 300);
-        setFormData("");
+        setFormData({
+          title: "",
+          director: "",
+          year: new Date().getFullYear(),
+          genre: "",
+        });
       }
     };
 
