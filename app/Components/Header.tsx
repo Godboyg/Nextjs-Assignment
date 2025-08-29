@@ -37,7 +37,7 @@ function Header({ session , isAuthenticated , isloading } : Props) {
               </div>
               </>
             ) : (
-              <span onClick={() => signIn("google")}>login</span>
+              <span className='hover:cursor-pointer' onClick={() => signIn("google")}>login</span>
             )
               )
             )
