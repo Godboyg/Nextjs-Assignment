@@ -27,9 +27,9 @@ function Header({ session , isAuthenticated , isloading } : Props) {
             isAuthenticated ? (
               <>
               <div className="flex items-center justify-center">
-                <span>{session?.user?.name}</span>
+                <span className="text-white">{session?.user?.name}</span>
                 <div className="relative">
-                  <span onClick={() => setOpen(!open)} className='hover:cursor-pointer'><BsThreeDotsVertical /></span>
+                  <span onClick={() => setOpen(!open)} className='hover:cursor-pointer text-white'><BsThreeDotsVertical /></span>
                   <div className={`absolute top-full mt-1 text-white rounded-full bg-black p-2 right-0 ${open ? "block" : "hidden"}`}>
                     <span onClick={() => signOut()}>Logout</span>
                   </div>
