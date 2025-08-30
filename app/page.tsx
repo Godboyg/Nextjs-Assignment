@@ -148,7 +148,7 @@ export default function Home() {
       <Header session={session} isAuthenticated={isAuthenticated} isloading={isLoading} />
       <div className="w-full h-[90vh] py-4">
         <div className="flex items-center justify-around">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center border border-white rounnded-full bg-black">
             <span className="text-xl text-white font-bold"><CiSearch /></span>
             <input 
              type="text" 
