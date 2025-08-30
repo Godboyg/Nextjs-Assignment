@@ -194,7 +194,7 @@ export default function Home() {
               </div>
               ))
             ) : (
-              <span className="">No Movie Available</span>
+              <span className="text-white">No Movie Available</span>
             )
           }
         </div>
