@@ -154,7 +154,7 @@ export default function Home() {
              type="text" 
              value={query}
              onChange={(e) => setQuery(e.target.value)}
-             className="border-none outline-none p-1 w-[55vw] sm:w-[30vw] text-black" placeholder="Search Movie..."/>
+             className="border-none outline-none p-1 w-[55vw] sm:w-[30vw] text-white" placeholder="Search Movie..."/>
           </div>
           <div className="border border-white rounded-full w-[25vw] flex items-center justify-center sm:w-[14vw] md:w-[13vw] lg:w-[11vw] xl:w-[8vw] p-2 sm:p-2 text-black bg-green-300 text-[3.8vw] sm:text-[2vw] md:text-[1.7vw] lg:text-[1.3vw] xl:text-[1vw] hover:cursor-pointer"
           onClick={() => setOpen(true)}>
